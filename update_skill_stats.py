@@ -3,6 +3,7 @@ import json
 import os
 import datetime
 from pathlib import Path
+import re
 
 # 配置路径
 EASYCLAW_ROOT = Path.home() / ".easyclaw"
@@ -19,9 +20,12 @@ def count_agent_skills(agent_id):
     # 甘特和波特各有14个专项技能
     elif agent_id in ["gantt", "porter"]:
         return 14
-    # 巴菲特（股票专家）有4个真实专项技能
+    # 巴菲特（股票专家）有4个专项技能
     elif agent_id == "stockexpert-1":
         return 4
+    # Peter（TOKEN管理员）有10个专项技能
+    elif agent_id == "peter":
+        return 10
     return 0
 
 def get_used_skills_7days(agent_id):
@@ -35,6 +39,8 @@ def get_used_skills_7days(agent_id):
         return 7   # 14 * 0.5
     elif agent_id == "stockexpert-1":
         return 0   # 还未调用过
+    elif agent_id == "peter":
+        return 0   # 新创建，还未调用过
     return 0
 
 def update_html_stats():
@@ -57,13 +63,15 @@ def update_html_stats():
     stock_skills = count_agent_skills("stockexpert-1")
     stock_used = get_used_skills_7days("stockexpert-1")
     stock_rate = int((stock_used / stock_skills) * 100) if stock_skills > 0 else 0
+    
+    peter_skills = count_agent_skills("peter")
+    peter_used = get_used_skills_7days("peter")
+    peter_rate = int((peter_used / peter_skills) * 100) if peter_skills > 0 else 0
 
     # 读取HTML内容
     with open(INDEX_HTML, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # 替换统计数据
-    import re
     # 替换更新时间
     content = re.sub(
         r'<h2>📊 全局技能统计 <span style=".*?">.*?</span></h2>',
@@ -88,11 +96,16 @@ def update_html_stats():
         f'<div style="font-size: 36px; font-weight: bold; color: #f5222d; margin-bottom: 10px;">{porter_skills}</div>\n                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">波特</div>\n                        <div style="font-size: 14px; color: #666;">战略分析专项 · 7天使用率 {porter_rate}%</div>',
         content
     )
-    
     # 替换巴菲特数据
     content = re.sub(
         r'<div style="font-size: 36px; font-weight: bold; color: #52c41a; margin-bottom: 10px;">.*?</div>\s*<div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">巴菲特</div>\s*<div style="font-size: 14px; color: #666;">.*?</div>',
         f'<div style="font-size: 36px; font-weight: bold; color: #52c41a; margin-bottom: 10px;">{stock_skills}</div>\n                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">巴菲特</div>\n                        <div style="font-size: 14px; color: #666;">投研专项 · 7天使用率 {stock_rate}%</div>',
+        content
+    )
+    # 替换Peter数据
+    content = re.sub(
+        r'<div style="font-size: 36px; font-weight: bold; color: #fa8c16; margin-bottom: 10px;">.*?</div>\s*<div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">Peter</div>\s*<div style="font-size: 14px; color: #666;">.*?</div>',
+        f'<div style="font-size: 36px; font-weight: bold; color: #fa8c16; margin-bottom: 10px;">{peter_skills}</div>\n                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">Peter</div>\n                        <div style="font-size: 14px; color: #666;">TOKEN管理专项 · 7天使用率 {peter_rate}%</div>',
         content
     )
 

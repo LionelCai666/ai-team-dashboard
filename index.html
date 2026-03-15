@@ -527,7 +527,7 @@
         <div id="skills" class="tab-content active">
             <!-- 统计区域 -->
             <div class="task-board" style="margin-bottom: 30px;">
-                <h2>📊 全局技能统计 <span style="font-size: 14px; color: #999; font-weight: normal;">数据实时更新 · 截至 2026-03-13 14:32</span></h2>
+                <h2>📊 全局技能统计 <span style="font-size: 14px; color: #999; font-weight: normal;">数据实时更新 · 截至 2026-03-14 14:31</span></h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
                     <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 15px;">
                         <div style="font-size: 36px; font-weight: bold; color: #667eea; margin-bottom: 10px;">33</div>
@@ -548,6 +548,11 @@
                         <div style="font-size: 36px; font-weight: bold; color: #52c41a; margin-bottom: 10px;">4</div>
                         <div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">巴菲特</div>
                         <div style="font-size: 14px; color: #666;">投研专项 · 7天使用率 0%</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 15px;">
+                        <div style="font-size: 36px; font-weight: bold; color: #fa8c16; margin-bottom: 10px;">10</div>
+                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">Peter</div>
+                        <div style="font-size: 14px; color: #666;">TOKEN管理专项 · 7天使用率 0%</div>
                     </div>
                 </div>
             </div>
@@ -667,6 +672,29 @@
                     <button class="skill-btn" onclick="openSkillModal('交易指导')">交易指导</button>
                     <button class="skill-btn" onclick="openSkillModal('股票查询')">股票查询</button>
                     <button class="skill-btn" onclick="openSkillModal('深度分析')">深度分析</button>
+                </div>
+            </div>
+
+            <!-- Peter -->
+            <div class="agent-card" style="border-left: 4px solid #fa8c16;">
+                <div class="agent-header">
+                    <div class="agent-avatar" style="background: linear-gradient(135deg, #fa8c16, #ffc069);">💰</div>
+                    <div class="agent-info">
+                        <h2>Peter (TOKEN管理员)</h2>
+                        <p>成本管控 | API管理 | 异常预警</p>
+                    </div>
+                </div>
+                <div class="skill-buttons">
+                    <button class="skill-btn" onclick="openSkillModal('token消耗统计')">token消耗统计</button>
+                    <button class="skill-btn" onclick="openSkillModal('API密钥管理')">API密钥管理</button>
+                    <button class="skill-btn" onclick="openSkillModal('异常预警')">异常预警</button>
+                    <button class="skill-btn" onclick="openSkillModal('成本优化')">成本优化</button>
+                    <button class="skill-btn" onclick="openSkillModal('报表生成')">报表生成</button>
+                    <button class="skill-btn" onclick="openSkillModal('会话审计')">会话审计</button>
+                    <button class="skill-btn" onclick="openSkillModal('模型切换监控')">模型切换监控</button>
+                    <button class="skill-btn" onclick="openSkillModal('消耗趋势分析')">消耗趋势分析</button>
+                    <button class="skill-btn" onclick="openSkillModal('权限控制')">权限控制</button>
+                    <button class="skill-btn" onclick="openSkillModal('数据备份')">数据备份</button>
                 </div>
             </div>
         </div>
@@ -854,6 +882,34 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Peter -->
+                    <div class="team-card" style="background: linear-gradient(135deg, #fa8c16, #ffc069); color: white;">
+                        <div class="team-card-header">
+                            <div class="team-card-avatar">💰</div>
+                            <div class="team-card-info">
+                                <h3>Peter</h3>
+                                <div class="role">TOKEN管理员 | 成本管控</div>
+                            </div>
+                        </div>
+                        <div class="team-card-description">
+                            严谨负责的TOKEN管理员，实时监控所有智能体的token消耗、API key管理、成本优化和异常预警。确保token使用合理，控制使用成本，提供详细消耗报表。
+                        </div>
+                        <div class="team-card-stats">
+                            <div class="team-card-stat">
+                                <div class="value">ISTJ</div>
+                                <div class="label">性格类型</div>
+                            </div>
+                            <div class="team-card-stat">
+                                <div class="value">管控</div>
+                                <div class="label">核心能力</div>
+                            </div>
+                            <div class="team-card-stat">
+                                <div class="value">💰</div>
+                                <div class="label">专属标识</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -961,7 +1017,18 @@
             "公告抓取": "stock-announcement-fetcher，A股/美股/HK公告自动追踪、实时推送",
             "交易指导": "trading-coach，交易记录分析、策略优化、经验总结",
             "股票查询": "stock-info-explorer，股票信息查询、行情分析、基本面研究",
-            "深度分析": "stock-deep-analyzer，个股深度研究、行业分析、标的筛选"
+            "深度分析": "stock-deep-analyzer，个股深度研究、行业分析、标的筛选",
+            // Peter技能
+            "token消耗统计": "统计各智能体的token消耗数据，支持按天/周/月多维度统计",
+            "API密钥管理": "统一管理所有API密钥，支持轮换、权限控制、安全审计",
+            "异常预警": "实时监控异常token消耗、模型切换、API调用失败等异常情况，及时预警",
+            "成本优化": "提供token消耗优化建议，降低整体使用成本",
+            "报表生成": "自动生成token消耗报表、成本分析报表、使用趋势报表",
+            "会话审计": "审计所有会话的token使用情况，支持查询历史消耗记录",
+            "模型切换监控": "监控模型切换情况，避免意外切换到高成本模型",
+            "消耗趋势分析": "分析token消耗趋势，预测未来成本，提供预算建议",
+            "权限控制": "管理各智能体的API权限，避免越权调用高成本接口",
+            "数据备份": "所有消耗数据定期备份，支持历史数据回溯"
         };
 
         function openSkillModal(skillName) {

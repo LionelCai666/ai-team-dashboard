@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI团队多角色看板 - 蔡院长</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 顶部角色切换栏 */
+        .role-switcher {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .role-switcher h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .role-tabs {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .role-tab {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        .role-tab:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .role-tab.active {
+            background: white;
+            color: #333;
+            border-color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .role-tab .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .role-tab.drucker .avatar { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .role-tab.peter .avatar { background: linear-gradient(135deg, #fa8c16, #ffc069); }
+        .role-tab.gantt .avatar { background: linear-gradient(135deg, #1677ff, #69b1ff); }
+        .role-tab.porter .avatar { background: linear-gradient(135deg, #f5222d, #ff7875); }
+        .role-tab.buffett .avatar { background: linear-gradient(135deg, #52c41a, #95de64); }
+
+        /* 看板内容区域 */
+        .dashboard-content {
+            display: none;
+        }
+        .dashboard-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 头部样式 */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .stat-card .label {
+            font-size: 14px;
+            color: #666;
+        }
+        .stat-card.drucker { border-top: 4px solid #667eea; }
+        .stat-card.drucker .number { color: #667eea; }
+        .stat-card.peter { border-top: 4px solid #fa8c16; }
+        .stat-card.peter .number { color: #fa8c16; }
+        .stat-card.gantt { border-top: 4px solid #1677ff; }
+        .stat-card.gantt .number { color: #1677ff; }
+        .stat-card.porter { border-top: 4px solid #f5222d; }
+        .stat-card.porter .number { color: #f5222d; }
+        .stat-card.buffett { border-top: 4px solid #52c41a; }
+        .stat-card.buffett .number { color: #52c41a; }
+
+        /* 主内容区域 */
+        .main-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .panel-header .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+        }
+        .panel-header.drucker .avatar { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .panel-header.peter .avatar { background: linear-gradient(135deg, #fa8c16, #ffc069); }
+        .panel-header.gantt .avatar { background: linear-gradient(135deg, #1677ff, #69b1ff); }
+        .panel-header.porter .avatar { background: linear-gradient(135deg, #f5222d, #ff7875); }
+        .panel-header.buffett .avatar { background: linear-gradient(135deg, #52c41a, #95de64); }
+        .panel-header .info h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .panel-header .info p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* 标签页 */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover {
+            background: #e8e8e8;
+        }
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 技能列表 */
+        .skill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        .skill-tag {
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            border: 1px solid #e8e8e8;
+            transition: all 0.2s ease;
+        }
+        .skill-tag:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* 任务看板 */
+        .task-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .task-column {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .task-column h4 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .task-column h4 .count {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .task-item {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 3px solid #667eea;
+        }
+        .task-item .title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .task-item .meta {
+            font-size: 11px;
+            color: #999;
+        }
+
+        /* Token 统计表格 */
+        .token-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .token-table th,
+        .token-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .token-table th {
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+        }
+        .token-table td {
+            font-size: 14px;
+        }
+        .token-table .agent-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .token-table .agent-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        .status-normal { background: #e6f7ff; color: #1890ff; }
+        .status-warning { background: #fff7e6; color: #faad14; }
+        .status-danger { background: #ffe5e5; color: #ff4d4f; }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .task-columns {
+                grid-template-columns: 1fr;
+            }
+            .role-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 角色切换栏 -->
+        <div class="role-switcher">
+            <h3>🎭 切换角色看板</h3>
+            <div class="role-tabs">
+                <div class="role-tab drucker active" data-role="drucker">
+                    <div class="avatar">🎯</div>
+                    <span>德鲁克 (全局顾问)</span>
+                </div>
+                <div class="role-tab peter" data-role="peter">
+                    <div class="avatar">💰</div>
+                    <span>Peter (TOKEN管理)</span>
+                </div>
+                <div class="role-tab gantt" data-role="gantt">
+                    <div class="avatar">📊</div>
+                    <span>甘特 (项目管理)</span>
+                </div>
+                <div class="role-tab porter" data-role="porter">
+                    <div class="avatar">⚔️</div>
+                    <span>波特 (战略分析)</span>
+                </div>
+                <div class="role-tab buffett" data-role="buffett">
+                    <div class="avatar">📈</div>
+                    <span>巴菲特 (投研)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 德鲁克看板 -->
+        <div class="dashboard-content drucker active" data-dashboard="drucker">
+            <div class="header">
+                <h1>🎯 德鲁克 - 全局顾问看板</h1>
+                <p>管理学大师 · 战略咨询 · 目标导向 · 深邃洞察</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card drucker">
+                    <div class="number">33</div>
+                    <div class="label">全量技能</div>
+                </div>
+                <div class="stat-card drucker">
+                    <div class="number">81%</div>
+                    <div class="label">7天使用率</div>
+                </div>
+                <div class="stat-card drucker">
+                    <div class="number">5</div>
+                    <div class="label">下属智能体</div>
+                </div>
+                <div class="stat-card drucker">
+                    <div class="number">156</div>
+                    <div class="label">本周对话数</div>
+                </div>
+            </div>
+
+            <div class="main-panel">
+                <div class="panel-header drucker">
+                    <div class="avatar">🎯</div>
+                    <div class="info">
+                        <h2>德鲁克专属工作区</h2>
+                        <p>INTJ · 战略家 · 全局统筹</p>
+                    </div>
+                </div>
+
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="drucker-skills">📊 技能看板</button>
+                    <button class="tab-btn" data-tab="drucker-tasks">📋 任务看板</button>
+                    <button class="tab-btn" data-tab="drucker-team">👥 团队管理</button>
+                </div>
+
+                <div class="tab-content drucker-skills active">
+                    <h3 style="margin-bottom: 15px;">全部 33 个技能</h3>
+                    <div class="skill-grid">
+                        <div class="skill-tag">智能体记忆系统</div>
+                        <div class="skill-tag">AI每日资讯摘要</div>
+                        <div class="skill-tag">API设计原则</div>
+                        <div class="skill-tag">全网数据爬取</div>
+                        <div class="skill-tag">信息图生成</div>
+                        <div class="skill-tag">公众号发文</div>
+                        <div class="skill-tag">网页转Markdown</div>
+                        <div class="skill-tag">博客写作</div>
+                        <div class="skill-tag">头脑风暴</div>
+                        <div class="skill-tag">数据叙事</div>
+                        <div class="skill-tag">多智能体配置</div>
+                        <div class="skill-tag">中文文本去AI化</div>
+                        <div class="skill-tag">AI图像生成</div>
+                        <div class="skill-tag">来仔AI生成</div>
+                        <div class="skill-tag">营销心理学</div>
+                        <div class="skill-tag">竞争战略分析</div>
+                        <div class="skill-tag">音乐创作</div>
+                        <div class="skill-tag">Notion操作</div>
+                        <div class="skill-tag">Obsidian操作</div>
+                        <div class="skill-tag">投资组合管理</div>
+                        <div class="skill-tag">定价策略</div>
+                        <div class="skill-tag">项目工作流管理</div>
+                        <div class="skill-tag">量化研究</div>
+                        <div class="skill-tag">销售AI助手</div>
+                        <div class="skill-tag">自进化智能体</div>
+                        <div class="skill-tag">职场沟通指导</div>
+                        <div class="skill-tag">天气查询</div>
+                        <div class="skill-tag">网络搜索</div>
+                        <div class="skill-tag">公众号文章写作</div>
+                        <div class="skill-tag">提示词优化</div>
+                        <div class="skill-tag">飞书生态</div>
+                        <div class="skill-tag">文档处理</div>
+                        <div class="skill-tag">系统工具</div>
+                    </div>
+                </div>
+
+                <div class="tab-content drucker-tasks">
+                    <div class="task-columns">
+                        <div class="task-column">
+                            <h4>📝 待做 <span class="count">3</span></h4>
+                            <div class="task-item">
+                                <div class="title">完成HTML看板优化</div>
+                                <div class="meta">高优先级 · 今天</div>
+                            </div>
+                            <div class="task-item">
+                                <div class="title">整理智能体模型配置文档</div>
+                                <div class="meta">中优先级 · 今天</div>
+                            </div>
+                        </div>
+                        <div class="task-column">
+                            <h4>⏳ 正在做 <span class="count">1</span></h4>
+                            <div class="task-item">
+                                <div class="title">优化智能体模型配置</div>
+                                <div class="meta">高优先级 · 进行中</div>
+                            </div>
+                        </div>
+                        <div class="task-column">
+                            <h4>✅ 已完成 <span class="count">2</span></h4>
+                            <div class="task-item">
+                                <div class="title">配置全局消息前缀规则</div>
+                                <div class="meta">高优先级 · 今天</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content drucker-team">
+                    <h3 style="margin-bottom: 15px;">管理的智能体团队</h3>
+                    <table class="token-table">
+                        <thead>
+                            <tr>
+                                <th>智能体</th>
+                                <th>角色定位</th>
+                                <th>技能数</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><div class="agent-name"><div class="agent-avatar" style="background: linear-gradient(135deg, #1677ff, #69b1ff);">📊</div>甘特</div></td>
+                                <td>项目管理专家</td>
+                                <td>14</td>
+                                <td><span class="status-badge status-normal">运行中</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="agent-name"><div class="agent-avatar" style="background: linear-gradient(135deg, #f5222d, #ff7875);">⚔️</div>波特</div></td>
+                                <td>竞争战略专家</td>
+                                <td>14</td>
+                                <td><span class="status-badge status-normal">运行中</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="agent-name"><div class="agent-avatar" style="background: linear-gradient(135deg, #52c41a, #95de64);">📈</div>巴菲特</div></td>
+                                <td>投研专家</td>
+                                <td>4</td>
+                                <td><span class="status-badge status-normal">运行中</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="agent-name"><div class="agent-avatar" style="background: linear-gradient(135deg, #fa8c16, #ffc069);">💰</div>Peter</div></td>
+                                <td>TOKEN管理员</td>
+                                <td>10</td>
+                                <td><span class="status-badge status-normal">运行中</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Peter (TOKEN管理员) 看板 -->
+        <div class="dashboard-content peter" data-dashboard="peter">
+            <div class="header">
+                <h1>💰 Peter - TOKEN管理看板</h1>
+                <p>成本管控 · API管理 · 异常预警 · 数据备份</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card peter">
+                    <div class="number">¥128.50</div>
+                    <div class="label">今日消耗</div>
+                </div>
+                <div class="stat-card peter">
+                    <div class="number">¥2,456.80</div>
+                    <div class="label">本月消耗</div>
+                </div>
+                <div class="stat-card peter">
+                    <div class="number">5</div>
+                    <div class="label">监控智能体</div>
+                </div>
+                <div class="stat-card peter">
+                    <div class="number">3</div>
+                    <div class="label">API密钥</div>
+                </div>
+            </div>
+
+            <div class="main-panel">
+                <div class="panel-header peter">
+                    <div class="avatar">💰</div>
+                    <div class="info">
+                        <h2>Peter专属监控区</h2>
+                        <p>ISTJ · 检查员 · 严谨负责</p>
+                    </div>
+                </div>
+
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="peter-tokens">📊 Token消耗</button>
+                    <button class="tab-btn" data-tab="peter-api">🔑 API管理</button>
+                    <button class="tab-btn" data-tab="peter-alerts">⚠️ 异常预警</button>
+                </div>
+
+                <div class="tab-content peter-tokens active">
+                    <h3 style="margin-bottom: 15px;">各智能体 Token 消耗统计</h3>
+                    <table class="token-table">
+                        <thead>
+                            <tr>
+                                <th>智能体</th>
+                                <th>今日消耗</th>
+                                <th>本周消耗</th>
+                                <th>本月消耗</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><div class="agent-name"><div class="agent-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2);">🎯</div>德鲁克</div></td>
+                                <td>¥45.20</td>
+                                <td>¥312.50</td>
+                                <td>¥1,245.60</td>
+                                <td><span class="status-badge status-normal">正常</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="agent-name"><div class="agent-avatar" style="background: linear-gradient(135deg, #1677ff, #69b1ff);">📊</div>甘特</div></td>
+                                <td>¥32.80</td>
+                                <td>¥198.30</td>
+                                <td>¥456.20</td>
+                                <td><span class="status-badge status-normal">正常</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="agent-name"><div class="agent-avatar" style="background: linear-gradient(135deg, #f5222d, #ff7875);">⚔️</div>波特</div></td>
+                                <td>¥28.50</td>
+                                <td>¥156.80</td>
+                                <td>¥378.90</td>
+                                <td><span class="status-badge status-normal">正常</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="agent-name"><div class="agent-avatar" style="background: linear-gradient(135deg, #52c41a, #95de64);">📈</div>巴菲特</div></td>
+                                <td>¥12.00</td>
+                                <td>¥45.20</td>
+                                <td>¥128.50</td>
+                                <td><span class="status-badge status-warning">偏低</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="agent-name"><div class="agent-avatar" style="background: linear-gradient(135deg, #fa8c16, #ffc069);">💰</div>Peter</div></td>
+                                <td>¥10.00</td>
+                                <td>¥28.00</td>
+                                <td>¥76.00</td>
+                                <td><span class="status-badge status-normal">正常</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-content peter-api">
+                    <h3 style="margin-bottom: 15px;">API 密钥管理</h3>
+                    <table class="token-table">
+                        <thead>
+                            <tr>
+                                <th>提供商</th>
+                                <th>密钥状态</th>
+                                <th>剩余额度</th>
+                                <th>最后使用</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SiliconFlow (Pro)</td>
+                                <td>✅ 已配置</td>
+                                <td>充足</td>
+                                <td>刚刚</td>
+                                <td><span class="status-badge status-normal">正常</span></td>
+                            </tr>
+                            <tr>
+                                <td>EasyClaw (默认)</td>
+                                <td>✅ 已配置</td>
+                                <td>点数充足</td>
+                                <td>10分钟前</td>
+                                <td><span class="status-badge status-normal">正常</span></td>
+                            </tr>
+                            <tr>
+                                <td>火山引擎 (Ark)</td>
+                                <td>⚠️ 已配置</td>
+                                <td>coding plan</td>
+                                <td>3天前</td>
+                                <td><span class="status-badge status-warning">未使用</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-content peter-alerts">
+                    <h3 style="margin-bottom: 15px;">异常预警记录</h3>
+                    <div class="task-column" style="background: #fff7e6; border: 1px solid #ffd591;">
+                        <div class="task-item" style="border-left-color: #faad14;">
+                            <div class="title">🟡 火山引擎 Ark API 3天未使用</div>
+                            <div class="meta">2026-03-15 02:00 · 请检查配置是否正常</div>
+                        </div>
+                    </div>
+                    <div class="task-column" style="background: #e6f7ff; border: 1px solid #91d5ff; margin-top: 10px;">
+                        <div class="task-item" style="border-left-color: #1890ff;">
+                            <div class="title">🔵 每日自动备份完成</div>
+                            <div class="meta">2026-03-15 02:00 · 备份大小: 3.5MB</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 甘特看板 -->
+        <div class="dashboard-content gantt" data-dashboard="gantt">
+            <div class="header">
+                <h1>📊 甘特 - 项目管理看板</h1>
+                <p>资深项目管理 · 甘特图专家 · 进度管控</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card gantt">
+                    <div class="number">5</div>
+                    <div class="label">进行中项目</div>
+                </div>
+                <div class="stat-card gantt">
+                    <div class="number">14</div>
+                    <div class="label">专项技能</div>
+                </div>
+                <div class="stat-card gantt">
+                    <div class="number">87%</div>
+                    <div class="label">项目准时率</div>
+                </div>
+                <div class="stat-card gantt">
+                    <div class="number">12</div>
+                    <div class="label">本周任务</div>
+                </div>
+            </div>
+            <div class="main-panel">
+                <div class="panel-header gantt">
+                    <div class="avatar">📊</div>
+                    <div class="info">
+                        <h2>甘特专属工作区</h2>
+                        <p>ESTJ · 执行官 · 项目管控</p>
+                    </div>
+                </div>
+                <p style="text-align: center; color: #999; padding: 40px;">甘特看板内容开发中...</p>
+            </div>
+        </div>
+
+        <!-- 波特看板 -->
+        <div class="dashboard-content porter" data-dashboard="porter">
+            <div class="header">
+                <h1>⚔️ 波特 - 战略分析看板</h1>
+                <p>竞争战略 · 行业分析 · 三大战略</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card porter">
+                    <div class="number">8</div>
+                    <div class="label">分析中行业</div>
+                </div>
+                <div class="stat-card porter">
+                    <div class="number">14</div>
+                    <div class="label">专项技能</div>
+                </div>
+                <div class="stat-card porter">
+                    <div class="number">23</div>
+                    <div class="label">已完成报告</div>
+                </div>
+                <div class="stat-card porter">
+                    <div class="number">5</div>
+                    <div class="label">竞争对手</div>
+                </div>
+            </div>
+            <div class="main-panel">
+                <div class="panel-header porter">
+                    <div class="avatar">⚔️</div>
+                    <div class="info">
+                        <h2>波特专属工作区</h2>
+                        <p>ENTJ · 统帅 · 竞争策略</p>
+                    </div>
+                </div>
+                <p style="text-align: center; color: #999; padding: 40px;">波特看板内容开发中...</p>
+            </div>
+        </div>
+
+        <!-- 巴菲特看板 -->
+        <div class="dashboard-content buffett" data-dashboard="buffett">
+            <div class="header">
+                <h1>📈 巴菲特 - 投研看板</h1>
+                <p>价值投资 · 财报解读 · 股市研判</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card buffett">
+                    <div class="number">4</div>
+                    <div class="label">投研技能</div>
+                </div>
+                <div class="stat-card buffett">
+                    <div class="number">156</div>
+                    <div class="label">追踪股票</div>
+                </div>
+                <div class="stat-card buffett">
+                    <div class="number">23%</div>
+                    <div class="label">本年收益</div>
+                </div>
+                <div class="stat-card buffett">
+                    <div class="number">8</div>
+                    <div class="label">持仓行业</div>
+                </div>
+            </div>
+            <div class="main-panel">
+                <div class="panel-header buffett">
+                    <div class="avatar">📈</div>
+                    <div class="info">
+                        <h2>巴菲特专属工作区</h2>
+                        <p>INTJ · 战略家 · 价值投资</p>
+                    </div>
+                </div>
+                <p style="text-align: center; color: #999; padding: 40px;">巴菲特看板内容开发中...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 角色切换
+        const roleTabs = document.querySelectorAll('.role-tab');
+        const dashboardContents = document.querySelectorAll('.dashboard-content');
+
+        roleTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const role = tab.dataset.role;
+
+                // 更新角色标签状态
+                roleTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // 切换看板内容
+                dashboardContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.dataset.dashboard === role) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // 内部标签页切换（每个看板独立）
+        document.querySelectorAll('.dashboard-content').forEach(dashboard => {
+            const tabBtns = dashboard.querySelectorAll('.tab-btn');
+            const tabContents = dashboard.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.dataset.tab;
+
+                    // 只影响当前看板内的标签
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.classList.contains(tabId)) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+</invoke>

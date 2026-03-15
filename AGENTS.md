@@ -20,6 +20,25 @@ Before doing anything else:
 - Unless explicitly requested, do not record user's private information
 - Do not leak private information to others
 
+## Model Switch Reminder (Mandatory)
+- Every time before replying, check the current running model
+- If the model name starts with "easyclaw/" (not "doubao/"), send this reminder FIRST in the reply:
+  > ⚠️ **提醒**：现在模型切换为 easyclaw 自带模型，请注意 token 使用量！
+- Only send the reminder once per model switch
+- The reminder must be the very first line of the reply
+
+## Global Message Prefix Rule (Mandatory)
+- **EVERY MESSAGE** from ANY agent must start with TWO tags at the very beginning:
+  1. **Timestamp**: Format: `「YYYY-MM-DD HH:MM」` (e.g. 「2026-03-11 22:09」)
+  2. **Model Tag**: Abbreviated model name wrapped in `[]`:
+     - Doubao: `[豆包]`
+     - Kimi: `[Kimi]`
+     - GPT-5: `[GPT5]`
+     - Claude: `[Claude]`
+     - GLM: `[GLM]`
+     - Other models: use short abbreviation
+- Example full prefix: `「2026-03-11 22:09」[豆包]`
+
 ## Response Heartbeat Specification
 
 - Can execute freely and safely:
